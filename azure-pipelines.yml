@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: 'Default'
 
 variables:
   dockerRegistryServiceConnection: 'DockerHubConnection'
@@ -12,20 +12,13 @@ variables:
   dockerfilePath: 'Dockerfile'
 
 steps:
-  # a. Збирання проєкту (встановлення залежностей)
-  - task: UsePythonVersion@0
-    displayName: 'Use Python 3.11'
-    inputs:
-      versionSpec: '3.11'
-
   - script: |
       python -m pip install --upgrade pip
-      pip install -r requirements.txt
+      python -m pip install -r requirements.txt
     displayName: 'Build project (install dependencies)'
 
-  # b. Запуск unit-тестів
   - script: |
-      pip install pytest
+      python -m pip install pytest
       python -m pytest tests --junitxml=test-results.xml
     displayName: 'Run unit tests'
 
@@ -36,7 +29,6 @@ steps:
       testResultsFiles: 'test-results.xml'
       testRunTitle: 'Unit tests'
 
-  # c + d. Збирання Docker-образу та присвоєння тегів
   - task: Docker@2
     displayName: 'Build Docker image'
     inputs:
@@ -48,7 +40,6 @@ steps:
         latest
         $(Build.BuildId)
 
-  # e. Публікація в Docker Hub
   - task: Docker@2
     displayName: 'Push Docker image'
     inputs:

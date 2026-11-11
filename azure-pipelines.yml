@@ -19,6 +19,27 @@ steps:
     displayName: 'Build project (install dependencies)'
 
   - script: |
+     
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: 'Default'
+
+variables:
+  dockerRegistryServiceConnection: 'DockerHubConnection'
+  imageRepository: 'sofiya56/library-app'
+  dockerfilePath: 'Dockerfile'
+
+steps:
+  - script: |
+      python3 -m pip install --upgrade pip
+      python3 -m pip install -r requirements.txt
+    displayName: 'Build project (install dependencies)'
+
+  - script: |
       python3 -m pip install pytest
       python3 -m pytest tests --junitxml=test-results.xml
     displayName: 'Run unit tests'
@@ -31,22 +52,12 @@ steps:
       testRunTitle: 'Unit tests'
 
   - task: Docker@2
-    displayName: 'Build Docker image'
+    displayName: 'Build and Push Docker image'
     inputs:
-      command: build
+      command: buildAndPush
       containerRegistry: $(dockerRegistryServiceConnection)
       repository: $(imageRepository)
-      dockerfile: $(dockerfilePath)
-      tags: |
-        latest
-        $(Build.BuildId)
-
-  - task: Docker@2
-    displayName: 'Push Docker image'
-    inputs:
-      command: push
-      containerRegistry: $(dockerRegistryServiceConnection)
-      repository: $(imageRepository)
+      Dockerfile: $(dockerfilePath)
       tags: |
         latest
         $(Build.BuildId)

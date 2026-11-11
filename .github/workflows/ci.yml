@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: pip
 
       - name: Install dependencies
@@ -35,13 +35,42 @@ jobs:
       - name: Unit tests
         run: python -m pytest tests -v
 
-  docker-pack-n-push:
+  docker-api:
     needs: build-n-test
     uses: ./.github/workflows/docker-pack-n-push.yml
     with:
-      image-name: sofiya56/lab2-api
+      image-name: sofiya56/lab4-api
       tag: latest
       push: ${{ github.ref == 'refs/heads/main' }}
+      artifact-name: image-api
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  docker-client:
+    needs: build-n-test
+    uses: ./.github/workflows/docker-pack-n-push.yml
+    with:
+      image-name: sofiya56/lab4-client
+      tag: latest
+      context: ./client
+      dockerfile: client/Dockerfile
+      push: ${{ github.ref == 'refs/heads/main' }}
+      artifact-name: image-client
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  docker-migrator:
+    needs: build-n-test
+    uses: ./.github/workflows/docker-pack-n-push.yml
+    with:
+      image-name: sofiya56/lab4-migrator
+      tag: latest
+      context: .
+      dockerfile: migrator/Dockerfile
+      push: ${{ github.ref == 'refs/heads/main' }}
+      artifact-name: image-migrator
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

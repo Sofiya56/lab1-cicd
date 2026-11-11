@@ -27,6 +27,11 @@ on:
         required: false
         type: string
         default: ./Dockerfile
+      artifact-name:
+        description: 'Ім’я артефакту (унікальне для кожного виклику)'
+        required: false
+        type: string
+        default: docker-image
     secrets:
       DOCKERHUB_USERNAME:
         required: false
@@ -58,7 +63,9 @@ jobs:
           context: ${{ inputs.context }}
           file: ${{ inputs.dockerfile }}
           push: true
-          tags: ${{ inputs.image-name }}:${{ inputs.tag }}
+          tags: |
+            ${{ inputs.image-name }}:${{ inputs.tag }}
+            ${{ inputs.image-name }}:${{ github.sha }}
 
       # ---- інші гілки: збірка і збереження в артефакти ----
       - name: Build and export to tar
@@ -75,6 +82,6 @@ jobs:
         if: ${{ !inputs.push }}
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
+          name: ${{ inputs.artifact-name }}
           path: /tmp/image.tar
           retention-days: 7

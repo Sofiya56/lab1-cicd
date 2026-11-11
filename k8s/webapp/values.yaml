@@ -1,0 +1,45 @@
+api:
+  image:
+    repository: sofiya56/lab4-api
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 8000
+  service:
+    type: ClusterIP
+    port: 8000
+
+client:
+  image:
+    repository: sofiya56/lab4-client
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 80
+  service:
+    type: ClusterIP
+    port: 80
+
+migrator:
+  image:
+    repository: sofiya56/lab4-migrator
+    tag: latest
+    pullPolicy: Always
+
+db:
+  image: postgres:16
+  name: appdb
+  user: appuser
+  password: apppass
+  port: 5432
+  storage: 1Gi
+  nodeName: lectures-worker
+  hostPath: /var/lib/webapp-db
+
+config:
+  appEnv: lab
+
+ingress:
+  enabled: true
+  className: nginx
+  host: webapp.lab.test

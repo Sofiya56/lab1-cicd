@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Task Manager</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; }
+    li { margin: .4rem 0; } .done { text-decoration: line-through; color: gray; }
+    input { padding: 4px; } button { margin-left: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Завдання</h1>
+  <form id="f">
+    <input id="title" placeholder="Назва" required>
+    <input id="desc" placeholder="Опис">
+    <button>Додати</button>
+  </form>
+  <ul id="list"></ul>
+
+<script>
+const API = "/api/tasks";
+const list = document.getElementById("list");
+
+async function load() {
+  const tasks = await (await fetch(API)).json();
+  list.innerHTML = "";
+  for (const t of tasks) {
+    const li = document.createElement("li");
+    const span = document.createElement("span");
+    span.textContent = t.title + (t.description ? " — " + t.description : "");
+    if (t.completed) span.className = "done";
+    const toggle = document.createElement("button");
+    toggle.textContent = t.completed ? "Відновити" : "Готово";
+    toggle.onclick = () => save(t.id, { ...t, completed: !t.completed });
+    const edit = document.createElement("button");
+    edit.textContent = "Редагувати";
+    edit.onclick = () => {
+      const title = prompt("Назва", t.title);
+      if (title) save(t.id, { ...t, title });
+    };
+    const del = document.createElement("button");
+    del.textContent = "Видалити";
+    del.onclick = async () => { await fetch(`${API}/${t.id}`, { method: "DELETE" }); load(); };
+    li.append(span, toggle, edit, del);
+    list.append(li);
+  }
+}
+
+async function save(id, body) {
+  await fetch(`${API}/${id}`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+  });
+  load();
+}
+
+document.getElementById("f").onsubmit = async (e) => {
+  e.preventDefault();
+  await fetch(API, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: title.value, description: desc.value || null })
+  });
+  e.target.reset();
+  load();
+};
+load();
+</script>
+</body>
+</html>

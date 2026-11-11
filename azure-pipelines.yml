@@ -14,13 +14,13 @@ variables:
 
 steps:
   - script: |
-      python3 -m pip install --upgrade pip
-      python3 -m pip install -r requirements.txt
+      py -3.13 -m pip install --upgrade pip
+      py -3.13 -m pip install -r requirements.txt
     displayName: 'Build project (install dependencies)'
 
   - script: |
-      python3 -m pip install pytest
-      python3 -m pytest tests --junitxml=test-results.xml
+      py -3.13 -m pip install pytest
+      py -3.13 -m pytest tests --junitxml=test-results.xml
     displayName: 'Run unit tests'
 
   - task: PublishTestResults@2
